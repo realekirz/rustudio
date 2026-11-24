@@ -3794,7 +3794,14 @@ impl Renderer {
         let one_sample_likely = rustudio_core::rustudio_settings::weak_gpu()
             || rustudio_core::rustudio_settings::performance_value("quality") == "automatic"
             || rustudio_core::rustudio_settings::performance_value("detail") == "low";
-        if one_sample_likely && std::env::var_os("RUSTUDIO_NO_PIPELINE_PREBUILD").is_none() {
+        // On a backend that already starts at one sample (OpenGL) the prebuilt
+        // set is the viewport's own: compiling it on a second thread holds the
+        // shared GL context, and wgpu-hal's context lock gives up after 1 s
+        // ("Could not lock adapter context").
+        if startup_samples(&caps) != 1
+            && one_sample_likely
+            && std::env::var_os("RUSTUDIO_NO_PIPELINE_PREBUILD").is_none()
+        {
             let (device, queue) = (device.clone(), queue.clone());
             let (g, t, gl, tr, reduced) = (r.globals_layout.clone(), r.tex_layout.clone(), r.glass_layout.clone(), r.terrain_layout.clone(), r.reduced);
             let (tx, rx) = std::sync::mpsc::channel();
