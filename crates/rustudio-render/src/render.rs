@@ -3798,7 +3798,7 @@ impl Renderer {
         // set is the viewport's own: compiling it on a second thread holds the
         // shared GL context, and wgpu-hal's context lock gives up after 1 s
         // ("Could not lock adapter context").
-        if startup_samples(&caps) != 1
+        if startup_samples(&r.caps) != 1
             && one_sample_likely
             && std::env::var_os("RUSTUDIO_NO_PIPELINE_PREBUILD").is_none()
         {
